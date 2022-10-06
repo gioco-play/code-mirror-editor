@@ -3,7 +3,7 @@
 namespace GiocoPlus\CodeMirrorEditor;
 
 use GiocoPlus\Admin\Form\Field;
-
+use GiocoPlus\Admin\Form\NestedForm;
 class Editor extends Field
 {
     protected $options = [
@@ -103,9 +103,17 @@ class Editor extends Field
         );
 
         $options = json_encode($options);
-
+        $name = $this->variables()["name"];
+        $defaultKey = NestedForm::DEFAULT_KEY_NAME;
         $this->script = <<<EOT
-CodeMirror.fromTextArea(document.getElementById("{$this->id}"), $options);
+var {$name}="{$name}".replace(/{$defaultKey}/g, window.index);
+cm_{$name} = CodeMirror.fromTextArea(document.getElementById("{$name}"), $options);
+\$tabs = $('.nav.nav-tabs');
+if (\$tabs) {
+    \$('a[data-toggle="tab"]').on('shown.bs.tab', function() {
+        cm_{$name}.refresh();
+    });
+}
 EOT;
 
         return parent::render();
